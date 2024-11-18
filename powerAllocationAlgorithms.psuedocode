@@ -1,0 +1,51 @@
+class Device:
+    string name       # The name of the device
+    int start_time    # When the device connects
+    int consumption   # How much power the device is consuming
+
+class PowerSupply:
+    int max_capacity = 92        # Total power available
+    int available_capacity = 92  # Remaining power
+    Queue<Device> devices = Queue()  # Queue to manage devices (FIFO)
+    List<Device> active_devices = List()  # List of devices currently active
+
+    # When a new device connects
+    method connect_device(name, start_time, consumption):
+        # Check if enough power is available for the device
+        if consumption <= available_capacity:
+            # Create a new device instance
+            device = Device(name, start_time, consumption)
+            devices.enqueue(device)  # Add device to the queue
+            active_devices.append(device)  # Keep track of the device
+            available_capacity -= consumption  # Deduct the power allocated
+        else:
+            print("Not enough power for device:", name)
+
+    # When a device disconnects
+    method disconnect_device(name):
+        # Find and remove the device from the active list and queue
+        for device in active_devices:
+            if device.name == name:
+                active_devices.remove(device)
+                available_capacity += device.consumption  # Release power
+                devices.dequeue()  # Remove device from the queue
+                break
+
+    # When a device changes its power consumption
+    method change_device_consumption(name, new_consumption):
+        # Find the device and adjust its consumption
+        for device in active_devices:
+            if device.name == name:
+                # Release the power from the old consumption first
+                available_capacity += device.consumption
+                device.consumption = new_consumption  # Update consumption
+                if new_consumption <= available_capacity:
+                    available_capacity -= new_consumption  # Allocate new power
+                else:
+                    print("Not enough power for device:", name)
+                break
+
+    # Display current power allocation for all active devices
+    method display_allocation():
+        for device in active_devices:
+            print(device.name, "is consuming", device.consumption, "units.")
